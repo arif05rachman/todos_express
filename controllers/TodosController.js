@@ -54,7 +54,6 @@ class TodosController {
       if (!rowCount) res.status(400).json({ message: "id tidak ditemukan" });
       res.status(200).json({ message: "data berhasil dihapus" });
     } catch (error) {
-      console.log(error);
       res.status(500).json(error);
     }
   }

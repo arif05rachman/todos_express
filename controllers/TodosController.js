@@ -2,36 +2,61 @@ const TodosModel = require("../models/TodosModel");
 
 class TodosController {
   static getTodos(req, res) {
-    const todos = TodosModel.getAll();
-    res.status(200).json(todos);
+    TodosModel.getAll()
+      .then((data) => {
+        res.status(200).json(data.rows);
+      })
+      .catch((error) => {
+        res.status(500).json(error);
+      });
   }
-  static getTodo(req, res) {
-    const { id } = req.params;
-    const todo = TodosModel.getOne(id);
-    res.status(200).json(todo);
+  static async getTodo(req, res) {
+    try {
+      const { id } = req.params;
+      const { rows, rowCount } = await TodosModel.getOne(id);
+      if (!rowCount) res.status(400).json({ message: "id tidak ditemukan" });
+      res.status(200).json(rows[0]);
+    } catch (error) {
+      res.status(500).json(error);
+    }
   }
-  static AddTodo(req, res) {
-    const { id, title, completed } = req.body;
-    const newTodo = TodosModel.addOne({
-      id: Number(id),
-      title,
-      completed: Boolean(completed),
-    });
-    res.status(201).json(newTodo);
+  static async AddTodo(req, res) {
+    try {
+      const { title, completed } = req.body;
+      const { rowCount } = await TodosModel.addOne({
+        title,
+        completed: Boolean(completed),
+      });
+      if (!rowCount) throw { message: "gagal insert data" };
+      res.status(201).json(newTodo);
+    } catch (error) {
+      res.status(500).json(error);
+    }
   }
-  static UpdateTodo(req, res) {
-    const { id } = req.params;
-    const { title, completed } = req.body;
-    const updatedTodo = TodosModel.updateOne(Number(id), {
-      title,
-      completed: Boolean(completed),
-    });
-    res.status(200).json(updatedTodo);
+  static async UpdateTodo(req, res) {
+    try {
+      const { id } = req.params;
+      const { title, completed } = req.body;
+      const { rowCount } = await TodosModel.updateOne(Number(id), {
+        title,
+        completed: Boolean(completed),
+      });
+      if (!rowCount) res.status(400).json({ message: "id tidak ditemukan" });
+      res.status(200).json(updatedTodo);
+    } catch (error) {
+      res.status(500).json(error);
+    }
   }
-  static deleteTodo(req, res) {
-    const { id } = req.params;
-    const deletedTodo = TodosModel.deleteOne(Number(id));
-    res.status(200).json(deletedTodo);
+  static async deleteTodo(req, res) {
+    try {
+      const { id } = req.params;
+      const { rowCount } = await TodosModel.deleteOne(Number(id));
+      if (!rowCount) res.status(400).json({ message: "id tidak ditemukan" });
+      res.status(200).json({ message: "data berhasil dihapus" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json(error);
+    }
   }
 }
 

@@ -1,38 +1,29 @@
-let todos = [
-  { id: 1, title: "new activity", completed: true },
-  { id: 2, title: "new activity 2", completed: false },
-];
-
+const db = require("./connection");
 class TodosModel {
   static getAll() {
-    // buat query select all data todos
-    return todos;
+    return db.query("SELECT * FROM todos ORDER BY id ASC");
   }
+
   static getOne(id) {
-    const todo = todos.find((element) => element.id === Number(id));
-    return todo;
+    return db.query("SELECT * FROM todos WHERE id = $1", [id]);
   }
-  static addOne(newTodo) {
-    todos.push(newTodo);
-    return newTodo;
+
+  static addOne(body) {
+    return db.query("INSERT INTO todos (title, completed) VALUES ($1, $2)", [
+      body?.title,
+      body?.completed,
+    ]);
   }
-  static updateOne(id, updateTodo) {
-    const { title, completed } = updateTodo;
-    todos.forEach((element, idx) => {
-      if (id === element.id) {
-        todos[idx] = { id, title, completed };
-      }
-    });
-    return { id, title, completed };
+
+  static updateOne(id, body) {
+    return db.query(
+      "UPDATE todos SET title = $1, completed = $2 WHERE id = $3",
+      [body?.title, body?.completed, id]
+    );
   }
+
   static deleteOne(id) {
-    const newTodos = todos.filter((element) => {
-      return id !== element.id;
-    });
-    todos = newTodos;
-    return {
-      message: `todo ${id} hasbeen deleted`,
-    };
+    return db.query("DELETE FROM todos WHERE id = $1", [id]);
   }
 }
 
